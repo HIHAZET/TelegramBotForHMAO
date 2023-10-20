@@ -1,12 +1,12 @@
+import time
 
 from bs4 import BeautifulSoup
 from telebot.async_telebot import AsyncTeleBot
 import requests
 
 
-token = "TELEGRAM BOT TOKEN"
+token = "Telegram Token"
 bot = AsyncTeleBot(token)
-
 #Поиск сотрудников на сайте и информацию о них
 def FindWorks(textForSearch):
     link = 'https://admhmao.ru/organy-vlasti/telefonnyy-spravochnik-ogv-hmao'
@@ -28,7 +28,7 @@ def FindWorks(textForSearch):
     resultList = []
     for item in personal:
         for new in item:
-            if textForSearch in new:
+            if str(textForSearch).lower() in str(new).lower():
                 resultList.append(item)
     return resultList
 
@@ -36,14 +36,14 @@ def convertInfo(text: str):
     mass = ['Кабинет','E-mail','Вн.тел.','Факс']
     for item in mass:
         if text.find(item) != -1:
-            text = text.replace(item,f'\n{item}')
+            text = text.replace(item,f'\n<b>{item}</b>')
     return text
 
 def getOutputData(array):
     resultOutput = []
     for worker in array:
         output = f"<b>ФИО</b>: {worker[1]}\n" \
-                 f"<b>Должность</b>: {worker[0]}"
+                 f"<b>Должность</b>: {worker[0]}\n"
 
         convertedInfo = convertInfo(worker[2])
         splitedInfo = convertedInfo.split('\n')
@@ -74,17 +74,18 @@ def getOutputData(array):
 #Обработчик команды /start
 @bot.message_handler(commands=["start"])
 async def SendHelp(message):
-    await bot.send_message(message.chat.id,"Для получения информации нужно ввести ФИО\nПример: Корчагина Ольга Михайловна")
+    await bot.send_message(message.chat.id,"Для получения информации нужно ввести ФИО, номер телефона или должность\nПример: Корчагина Ольга Михайловна")
 
 #Обработчик основных сообщений от пользователей
 @bot.message_handler(func=lambda message: True)
 async def HandlerGetInfo(message):
     await bot.send_message(message.chat.id,"Идёт поиск...")
     workers = FindWorks(message.text)
-    for output in getOutputData(workers):
+    outputData = getOutputData(workers)
+    for output in outputData:
         await bot.send_message(message.chat.id,output,parse_mode="HTML")
-
-
+        time.sleep(0.2)
+    await bot.send_message(message.chat.id, f"Поиск выполнен: найдено <b>{len(outputData)}</b> элементов", parse_mode="HTML")
 
 import asyncio
 asyncio.run(bot.polling())
