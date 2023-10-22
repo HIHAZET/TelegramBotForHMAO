@@ -5,7 +5,7 @@ from telebot.async_telebot import AsyncTeleBot
 import requests
 
 
-token = "Telegram Token"
+token = "6673782975:AAHt_52SZlEVRFVY5nYrsUeZuBx4nN4dpyo"
 bot = AsyncTeleBot(token)
 #Поиск сотрудников на сайте и информацию о них
 def FindWorks(textForSearch):
